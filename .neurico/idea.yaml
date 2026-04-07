@@ -1,0 +1,23 @@
+idea:
+  title: What text can't LLMs simulate?
+  domain: nlp
+  hypothesis: 'Older LLMs (e.g., from 2023) will have difficulty converging on certain
+    data from 2026 during finetuning, revealing areas where LLMs are ''stuck'' versus
+    flexible.
+
+    '
+  background:
+    description: 'We should take relatively old LLMs, e.g., from 2023 or so, and see
+      what data in 2026 they have trouble converging on in finetuning. Where are LLMs
+      ''stuck'' and where are they flexible?
+
+      '
+  metadata:
+    author: Ari Holtzman
+    source: IdeaHub
+    source_url: https://hypogenic.ai/ideahub/idea/EH1P3KtZ7FUbewLH0z5X
+    idea_id: what_text_can_t_llms_simulate__20260407_044919_4ecb4970
+    created_at: '2026-04-07T04:49:19.918708'
+    status: submitted
+    github_repo_name: llm-text-limitations-claude
+    github_repo_url: https://github.com/Hypogenic-AI/llm-text-limitations-claude
