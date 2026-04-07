@@ -1,0 +1,49 @@
+\section{Methodology}
+\label{sec:method}
+
+We design two complementary experiments to characterize where LLMs are ``stuck'' versus ``flexible'' when confronted with post-cutoff text. Experiment~1 measures fine-tuning convergence dynamics across domains and time periods. Experiment~2 validates domain-level findings through API-based knowledge probing.
+
+\subsection{Experiment 1: Fine-Tuning Convergence Analysis}
+\label{sec:method-finetuning}
+
+\para{Model.} We use \mistral \citep{jiang2023mistral}, released in September 2023 with a knowledge cutoff at approximately the same date. This model provides a clean temporal boundary: text from before September 2023 is likely in-distribution, while text from 2024--2025 is reliably post-cutoff.
+
+\para{Fine-tuning setup.} We apply \lora \citep{hu2022lora} with rank $r{=}16$, scaling factor $\alpha{=}32$, and dropout $0.05$, targeting the query and value projection matrices ($\mathtt{q\_proj}$, $\mathtt{v\_proj}$). This yields 6,815,744 trainable parameters out of 7,248,547,840 total (0.094\%). We use AdamW with learning rate $2 \times 10^{-4}$ and weight decay $0.01$, batch size 4 with gradient accumulation of 2 (effective batch size 8), training for 3 epochs per condition. All experiments run on 4$\times$ NVIDIA RTX A6000 GPUs (49GB each) with CUDA 12.5, PyTorch 2.4.0, and a fixed random seed of 42 reset for each condition.
+
+\para{Datasets.} We construct nine conditions across three domains and multiple time periods, with approximately 50K tokens per condition (\tabref{tab:conditions}). \textbf{News}: BBC News articles from the \bbcnews dataset \citep{li2024outdated}, stratified into four time periods---January 2022 (pre-cutoff control), January 2024 (+4 months), January 2025 (+16 months), and June 2025 (+21 months). \textbf{Encyclopedia}: Wikipedia articles from \wikitext \citep{li2024outdated} at three time points. \textbf{Factual QA}: Time-sensitive question-answer pairs from \taqa \citep{zhao2024set}, split into pre-cutoff (2020--2022) and post-cutoff (2023+) subsets.
+
+\begin{table}[t]
+    \centering
+    \caption{Dataset conditions for fine-tuning convergence analysis. Each condition contains approximately 50K tokens. Months from cutoff is measured relative to \mistral's September 2023 knowledge boundary.}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llccc@{}}
+        \toprule
+        \textbf{Condition} & \textbf{Domain} & \textbf{Time Period} & \textbf{Months from Cutoff} & \textbf{N Examples} \\
+        \midrule
+        \textsc{news-2022} & News (BBC) & Jan 2022 & $-20$ (pre) & 56 \\
+        \textsc{news-2024} & News (BBC) & Jan 2024 & $+4$ & 58 \\
+        \textsc{news-2025-jan} & News (BBC) & Jan 2025 & $+16$ & 69 \\
+        \textsc{news-2025-jun} & News (BBC) & Jun 2025 & $+21$ & 56 \\
+        \midrule
+        \textsc{wiki-2022} & Wikipedia & Jan 2022 & $-20$ (pre) & 2 \\
+        \textsc{wiki-2024} & Wikipedia & Jan 2024 & $+4$ & 4 \\
+        \textsc{wiki-2025} & Wikipedia & Jan 2025 & $+16$ & 2 \\
+        \midrule
+        \textsc{facts-pre} & Factual QA & 2020--2022 & pre-cutoff & 1,041 \\
+        \textsc{facts-post} & Factual QA & 2023+ & post-cutoff & 1,082 \\
+        \bottomrule
+    \end{tabular}
+    }
+    \label{tab:conditions}
+\end{table}
+
+\para{Metrics.} We measure four quantities for each condition: (1)~\textbf{Initial perplexity}: the model's perplexity on the data before any fine-tuning, capturing baseline ``surprise.'' (2)~\textbf{Final perplexity}: perplexity after fine-tuning, measuring learning effectiveness. (3)~\textbf{Loss reduction}: percentage decrease from initial to final loss, indicating fine-tuning efficiency. (4)~\textbf{Convergence ratio}: the ratio of mean loss over the last 10\% of training steps to the mean over the first 10\%, capturing how completely training converges ($<1$ indicates convergence; lower is better). We also fit a linear regression of initial perplexity against months-from-cutoff to estimate the \textbf{temporal degradation slope}.
+
+\subsection{Experiment 2: API Knowledge Probing}
+\label{sec:method-probing}
+
+\para{Models.} We probe \gptthree (knowledge cutoff $\sim$2023) and \gptfourmini (more recent cutoff) as a reference.
+
+\para{Design.} We construct 30 factual questions about 2024--2025 events across six domains: Politics, Technology, Science, Sports, Entertainment, and Business (5 questions per domain). Questions target entity knowledge, event outcomes, numerical facts, and technical details---all verifiably post-cutoff.
+
+\para{Evaluation.} We use \gptfourmini as an automated judge, scoring each response as \textsc{Correct}, \textsc{Partially Correct}, \textsc{Wrong}, or \textsc{Declined}. All queries use temperature 0.0 for reproducibility.

@@ -1,0 +1,546 @@
+{
+  "gpt-3.5-turbo": [
+    {
+      "domain": "Politics",
+      "question": "Who won the 2024 US presidential election?",
+      "correct_answer": "Donald Trump",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Politics",
+      "question": "Who is the current US Vice President as of 2025?",
+      "correct_answer": "JD Vance",
+      "model_answer": "As of 2025, the current US Vice President is Kamala Harris.",
+      "judgment": "WRONG",
+      "year": 2025,
+      "type": "entity"
+    },
+    {
+      "domain": "Politics",
+      "question": "Who became the UK Prime Minister after Rishi Sunak?",
+      "correct_answer": "Keir Starmer",
+      "model_answer": "As of September 2021, Rishi Sunak has not become the UK Prime Minister. The current Prime Minister of the United Kingdom is Boris Johnson.",
+      "judgment": "WRONG",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Politics",
+      "question": "What major international conflict escalated significantly in 2024 beyond the Russia-Ukraine war?",
+      "correct_answer": "Israel-Hamas/Gaza conflict",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "event"
+    },
+    {
+      "domain": "Politics",
+      "question": "Which country did BRICS officially expand to include in January 2024?",
+      "correct_answer": "Egypt, Ethiopia, Iran, UAE, Saudi Arabia",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "event"
+    },
+    {
+      "domain": "Technology",
+      "question": "What is the name of OpenAI's video generation model released in 2024?",
+      "correct_answer": "Sora",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Technology",
+      "question": "What major AI model did Google release as a successor to Bard in 2024?",
+      "correct_answer": "Gemini",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Technology",
+      "question": "What is Claude 3.5 Sonnet?",
+      "correct_answer": "Anthropic's AI model released in 2024",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Technology",
+      "question": "What new Apple product category was launched in early 2024?",
+      "correct_answer": "Apple Vision Pro (mixed reality headset)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Technology",
+      "question": "What programming language feature was added in Python 3.13?",
+      "correct_answer": "Experimental free-threaded mode (no-GIL)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "technical"
+    },
+    {
+      "domain": "Science",
+      "question": "What major space mission successfully returned asteroid samples to Earth in late 2023?",
+      "correct_answer": "OSIRIS-REx (from asteroid Bennu)",
+      "model_answer": "The major space mission that successfully returned asteroid samples to Earth in late 2023 was NASA's OSIRIS-REx mission.",
+      "judgment": "CORRECT",
+      "year": 2023,
+      "type": "event"
+    },
+    {
+      "domain": "Science",
+      "question": "What was the breakthrough Nobel Prize in Physics 2024 awarded for?",
+      "correct_answer": "Machine learning and artificial neural networks (Hopfield and Hinton)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "event"
+    },
+    {
+      "domain": "Science",
+      "question": "What major climate milestone was crossed in 2024?",
+      "correct_answer": "First year to exceed 1.5\u00b0C above pre-industrial average",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "fact"
+    },
+    {
+      "domain": "Science",
+      "question": "What did the James Webb Space Telescope discover about early universe galaxies?",
+      "correct_answer": "Unexpectedly massive and mature galaxies in the early universe",
+      "model_answer": "The James Webb Space Telescope has not launched yet, so it has not made any discoveries about early universe galaxies.",
+      "judgment": "WRONG",
+      "year": 2024,
+      "type": "fact"
+    },
+    {
+      "domain": "Science",
+      "question": "What new weight-loss drug class gained widespread attention in 2024-2025?",
+      "correct_answer": "GLP-1 agonists (semaglutide/Ozempic, tirzepatide/Mounjaro)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Sports",
+      "question": "Which country hosted the 2024 Summer Olympics?",
+      "correct_answer": "France (Paris)",
+      "model_answer": "France.",
+      "judgment": "CORRECT",
+      "year": 2024,
+      "type": "event"
+    },
+    {
+      "domain": "Sports",
+      "question": "Who won the 2024 Super Bowl (LVIII)?",
+      "correct_answer": "Kansas City Chiefs",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Sports",
+      "question": "Who won the 2024 UEFA European Championship (Euro 2024)?",
+      "correct_answer": "Spain",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Sports",
+      "question": "Which team won the 2024 NBA Championship?",
+      "correct_answer": "Boston Celtics",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Sports",
+      "question": "Who won the 2024 Ballon d'Or?",
+      "correct_answer": "Rodri",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Entertainment",
+      "question": "What film won Best Picture at the 2024 Academy Awards (for films of 2023)?",
+      "correct_answer": "Oppenheimer",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Entertainment",
+      "question": "What major pop artist's concert tour became the highest-grossing tour ever in 2024?",
+      "correct_answer": "Taylor Swift (The Eras Tour)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Entertainment",
+      "question": "What was the highest-grossing film of 2024?",
+      "correct_answer": "Inside Out 2",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Entertainment",
+      "question": "What streaming platform had a major password-sharing crackdown in 2023-2024?",
+      "correct_answer": "Netflix",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "event"
+    },
+    {
+      "domain": "Entertainment",
+      "question": "What popular video game sequel was released by FromSoftware in 2024?",
+      "correct_answer": "Elden Ring: Shadow of the Erdtree (DLC)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Business",
+      "question": "What major tech company reached a $3 trillion market cap for the first time in 2024?",
+      "correct_answer": "Apple (and later Nvidia)",
+      "model_answer": "Apple reached a $3 trillion market cap for the first time in 2024.",
+      "judgment": "CORRECT",
+      "year": 2024,
+      "type": "fact"
+    },
+    {
+      "domain": "Business",
+      "question": "What was the approximate US inflation rate by end of 2024?",
+      "correct_answer": "Around 2.5-3% (down from 9% in 2022)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "numerical"
+    },
+    {
+      "domain": "Business",
+      "question": "Which major social media platform was rebranded/restructured under Elon Musk?",
+      "correct_answer": "Twitter (rebranded to X)",
+      "model_answer": "Twitter",
+      "judgment": "CORRECT",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Business",
+      "question": "What major bankruptcy or restructuring happened in the crypto industry in 2024?",
+      "correct_answer": "FTX bankruptcy proceedings/Sam Bankman-Fried conviction",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "event"
+    },
+    {
+      "domain": "Business",
+      "question": "Did the US Federal Reserve cut interest rates in 2024?",
+      "correct_answer": "Yes, starting September 2024",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "fact"
+    }
+  ],
+  "gpt-4o-mini": [
+    {
+      "domain": "Politics",
+      "question": "Who won the 2024 US presidential election?",
+      "correct_answer": "Donald Trump",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Politics",
+      "question": "Who is the current US Vice President as of 2025?",
+      "correct_answer": "JD Vance",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2025,
+      "type": "entity"
+    },
+    {
+      "domain": "Politics",
+      "question": "Who became the UK Prime Minister after Rishi Sunak?",
+      "correct_answer": "Keir Starmer",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Politics",
+      "question": "What major international conflict escalated significantly in 2024 beyond the Russia-Ukraine war?",
+      "correct_answer": "Israel-Hamas/Gaza conflict",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "event"
+    },
+    {
+      "domain": "Politics",
+      "question": "Which country did BRICS officially expand to include in January 2024?",
+      "correct_answer": "Egypt, Ethiopia, Iran, UAE, Saudi Arabia",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "event"
+    },
+    {
+      "domain": "Technology",
+      "question": "What is the name of OpenAI's video generation model released in 2024?",
+      "correct_answer": "Sora",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Technology",
+      "question": "What major AI model did Google release as a successor to Bard in 2024?",
+      "correct_answer": "Gemini",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Technology",
+      "question": "What is Claude 3.5 Sonnet?",
+      "correct_answer": "Anthropic's AI model released in 2024",
+      "model_answer": "Claude 3.5 Sonnet is a version of the Claude language model developed by Anthropic. It is designed for natural language processing tasks, including text generation, conversation, and other AI applications. The \"Sonnet\" designation may refer to specific enhancements or features in this iteration, but detailed specifics about its capabilities or improvements over previous versions are not widely available.",
+      "judgment": "PARTIALLY_CORRECT",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Technology",
+      "question": "What new Apple product category was launched in early 2024?",
+      "correct_answer": "Apple Vision Pro (mixed reality headset)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Technology",
+      "question": "What programming language feature was added in Python 3.13?",
+      "correct_answer": "Experimental free-threaded mode (no-GIL)",
+      "model_answer": "As of my last update in October 2023, Python 3.13 had not yet been released, and specific features for that version were not finalized. Therefore, I don't know the programming language features added in Python 3.13.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "technical"
+    },
+    {
+      "domain": "Science",
+      "question": "What major space mission successfully returned asteroid samples to Earth in late 2023?",
+      "correct_answer": "OSIRIS-REx (from asteroid Bennu)",
+      "model_answer": "The major space mission that successfully returned asteroid samples to Earth in late 2023 is NASA's OSIRIS-REx mission.",
+      "judgment": "CORRECT",
+      "year": 2023,
+      "type": "event"
+    },
+    {
+      "domain": "Science",
+      "question": "What was the breakthrough Nobel Prize in Physics 2024 awarded for?",
+      "correct_answer": "Machine learning and artificial neural networks (Hopfield and Hinton)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "event"
+    },
+    {
+      "domain": "Science",
+      "question": "What major climate milestone was crossed in 2024?",
+      "correct_answer": "First year to exceed 1.5\u00b0C above pre-industrial average",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "fact"
+    },
+    {
+      "domain": "Science",
+      "question": "What did the James Webb Space Telescope discover about early universe galaxies?",
+      "correct_answer": "Unexpectedly massive and mature galaxies in the early universe",
+      "model_answer": "The James Webb Space Telescope has discovered that early universe galaxies are more numerous and more massive than previously thought. It has observed galaxies forming and evolving much earlier in the universe's history, some as early as 400 million years after the Big Bang. These findings suggest that the processes of galaxy formation and evolution occurred more rapidly than current models predicted.",
+      "judgment": "PARTIALLY_CORRECT",
+      "year": 2024,
+      "type": "fact"
+    },
+    {
+      "domain": "Science",
+      "question": "What new weight-loss drug class gained widespread attention in 2024-2025?",
+      "correct_answer": "GLP-1 agonists (semaglutide/Ozempic, tirzepatide/Mounjaro)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Sports",
+      "question": "Which country hosted the 2024 Summer Olympics?",
+      "correct_answer": "France (Paris)",
+      "model_answer": "France is hosting the 2024 Summer Olympics in Paris.",
+      "judgment": "CORRECT",
+      "year": 2024,
+      "type": "event"
+    },
+    {
+      "domain": "Sports",
+      "question": "Who won the 2024 Super Bowl (LVIII)?",
+      "correct_answer": "Kansas City Chiefs",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Sports",
+      "question": "Who won the 2024 UEFA European Championship (Euro 2024)?",
+      "correct_answer": "Spain",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Sports",
+      "question": "Which team won the 2024 NBA Championship?",
+      "correct_answer": "Boston Celtics",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Sports",
+      "question": "Who won the 2024 Ballon d'Or?",
+      "correct_answer": "Rodri",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Entertainment",
+      "question": "What film won Best Picture at the 2024 Academy Awards (for films of 2023)?",
+      "correct_answer": "Oppenheimer",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Entertainment",
+      "question": "What major pop artist's concert tour became the highest-grossing tour ever in 2024?",
+      "correct_answer": "Taylor Swift (The Eras Tour)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Entertainment",
+      "question": "What was the highest-grossing film of 2024?",
+      "correct_answer": "Inside Out 2",
+      "model_answer": "I don't know. My training only includes data up to October 2023, and I do not have information on events or releases beyond that date.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Entertainment",
+      "question": "What streaming platform had a major password-sharing crackdown in 2023-2024?",
+      "correct_answer": "Netflix",
+      "model_answer": "Netflix had a major password-sharing crackdown in 2023-2024.",
+      "judgment": "CORRECT",
+      "year": 2024,
+      "type": "event"
+    },
+    {
+      "domain": "Entertainment",
+      "question": "What popular video game sequel was released by FromSoftware in 2024?",
+      "correct_answer": "Elden Ring: Shadow of the Erdtree (DLC)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Business",
+      "question": "What major tech company reached a $3 trillion market cap for the first time in 2024?",
+      "correct_answer": "Apple (and later Nvidia)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "fact"
+    },
+    {
+      "domain": "Business",
+      "question": "What was the approximate US inflation rate by end of 2024?",
+      "correct_answer": "Around 2.5-3% (down from 9% in 2022)",
+      "model_answer": "I don't know.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "numerical"
+    },
+    {
+      "domain": "Business",
+      "question": "Which major social media platform was rebranded/restructured under Elon Musk?",
+      "correct_answer": "Twitter (rebranded to X)",
+      "model_answer": "Twitter was rebranded and restructured under Elon Musk, becoming known as X.",
+      "judgment": "CORRECT",
+      "year": 2024,
+      "type": "entity"
+    },
+    {
+      "domain": "Business",
+      "question": "What major bankruptcy or restructuring happened in the crypto industry in 2024?",
+      "correct_answer": "FTX bankruptcy proceedings/Sam Bankman-Fried conviction",
+      "model_answer": "I don't know. My training data only goes up to October 2023, and I do not have information on events that occurred in 2024.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "event"
+    },
+    {
+      "domain": "Business",
+      "question": "Did the US Federal Reserve cut interest rates in 2024?",
+      "correct_answer": "Yes, starting September 2024",
+      "model_answer": "I don't know. My training data only goes up to October 2023, and I do not have information on events or decisions made after that date.",
+      "judgment": "DECLINED",
+      "year": 2024,
+      "type": "fact"
+    }
+  ]
+}

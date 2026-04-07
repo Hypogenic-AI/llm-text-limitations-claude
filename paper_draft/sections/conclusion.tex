@@ -1,0 +1,8 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We investigated where 2023-era LLMs are ``stuck'' versus ``flexible'' when fine-tuned on post-cutoff text, measuring convergence dynamics across three domains and four time periods. Our experiments reveal a format--fact dichotomy: fine-tuning efficiently teaches textual patterns (75\% loss reduction on structured QA regardless of temporal distance) but cannot inject novel factual knowledge (news perplexity increases linearly at 0.065 PPL/month with only 40\% gap closure after fine-tuning). API probing confirms that models score 13.3\% on post-cutoff factual questions, with correct answers limited to events partially known before the cutoff.
+
+The practical takeaway is clear: fine-tuning teaches models to \emph{sound like} recent text without learning the facts within it. For deployment, this means using retrieval for factual recency and fine-tuning for domain adaptation---two complementary strategies that address different types of temporal knowledge gaps.
+
+Future work should evaluate generalization on held-out temporal splits, scale the analysis to larger Wikipedia samples and multiple model architectures, and investigate whether the format--fact boundary shifts with model scale or pretraining diversity. Understanding how this dichotomy interacts with the reversal curse \citep{berglund2024reversal} and model collapse \citep{shumailov2023curse} would further clarify the fundamental limits of parametric knowledge in language models.

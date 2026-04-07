@@ -1,0 +1,18 @@
+\section{Introduction}
+\label{sec:intro}
+
+Large language models know a great deal about the world---but only the world as it existed before their training data was collected. A model trained in September 2023 cannot know who won the 2024 election, what APIs shipped in 2025, or which companies merged last quarter. This temporal boundary is well understood in principle, yet its practical consequences remain poorly characterized: when we fine-tune an older model on recent text, what exactly does it learn?
+
+The standard answer---that fine-tuning injects new knowledge---turns out to be largely wrong. Prior work has shown that temporal degradation is real and roughly linear \citep{nylund2023time, li2024outdated}, and that fine-tuning on post-cutoff data often fails to improve factual accuracy \citep{ovadia2024finetuning}. However, these studies measure end-state performance rather than the learning process itself. We do not know whether all domains resist updating equally, or whether certain types of text are fundamentally harder to learn than others. This distinction matters: if news text resists fine-tuning but structured formats do not, the failure is about \emph{facts}, not \emph{patterns}---and the remedy is retrieval, not more training.
+
+We address this gap by measuring \emph{fine-tuning convergence dynamics} across systematically varied text domains and temporal distances. Our core experiment fine-tunes \mistral \citep{jiang2023mistral} with \lora \citep{hu2022lora} on nine conditions spanning three domains (news, encyclopedia, factual QA) and four time periods (2022--2025). We track training loss curves, perplexity reduction, and convergence ratios to characterize \emph{how} the model learns each type of text, not just whether it succeeds. We complement this with API-based knowledge probing of \gptthree on 30 post-cutoff factual questions across six domains.
+
+Our findings reveal a sharp dichotomy. News text shows a statistically significant linear increase in perplexity with temporal distance (0.065 PPL/month, $R^2{=}0.935$, $p{=}0.033$), and fine-tuning reduces this slope by only 40\%. Structured factual QA text, by contrast, achieves 75\% loss reduction regardless of temporal distance, with the pre/post-cutoff gap closing by 80\% after training. The model learns the \emph{format} of ``As of [year], regarding [entity]: [answer]'' with high efficiency, but cannot learn the specific entities and answers that populate it. API probing confirms this pattern: \gptthree answers only 13.3\% of post-cutoff questions correctly, with all correct answers involving events partially known before its cutoff.
+
+We make the following contributions:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item We measure fine-tuning convergence dynamics across three text domains and four time periods, showing that temporal resistance varies by domain rather than by time alone.
+    \item We identify a linear temporal degradation rate for news text (0.065 PPL/month) and show that fine-tuning closes only 40\% of this gap---quantifying the limits of parameter updates for factual recency.
+    \item We demonstrate that structured text achieves near-identical convergence regardless of temporal distance, establishing that fine-tuning teaches format, not facts.
+    \item We validate these findings with API-based knowledge probing, showing consistent domain-level patterns across fine-tuning and inference-time evaluation.
+\end{itemize}

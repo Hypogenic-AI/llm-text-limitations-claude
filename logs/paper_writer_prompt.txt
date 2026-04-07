@@ -1,0 +1,780 @@
+You are an academic paper writer. Generate a complete NEURIPS style paper
+based on the experiment results provided.
+
+════════════════════════════════════════════════════════════════════════════════
+                         IMPORTANT: BEFORE YOU START
+════════════════════════════════════════════════════════════════════════════════
+
+Before writing any content, you MUST complete these steps:
+
+1. READ THE SKILL: Review the paper-writer skill at .claude/skills/paper-writer/SKILL.md
+2. READ THE STYLE GUIDE: Study templates/paper_writing/lab_style_guide.md carefully
+3. REVIEW EXAMPLES: Browse paper_examples/ for formatting and language patterns:
+   - Look at sections/1.introduction.tex for language style
+   - Look at tables/*.tex for table formatting
+   - Look at commands/*.tex for macro usage
+4. VERIFY COMMAND TEMPLATES: Command templates (math.tex, general.tex, macros.tex) are pre-copied to paper_draft/commands/
+
+CRITICAL: Reference example papers for FORMATTING and LANGUAGE STYLE only.
+Do NOT copy content, phrasing, or narrative structure from the example papers.
+The examples are in a different research domain - focus only on presentation style.
+
+════════════════════════════════════════════════════════════════════════════════
+                            EXPERIMENT REPORT
+════════════════════════════════════════════════════════════════════════════════
+
+# Research Report: What Text Can&#39;t LLMs Simulate?
+
+## 1. Executive Summary
+
+We investigated where 2023-era LLMs are &#34;stuck&#34; versus &#34;flexible&#34; when fine-tuned on post-cutoff (2024-2025) text across different domains. Using Mistral-7B-v0.1 (September 2023) with LoRA fine-tuning on domain-stratified text and API-based knowledge probing of GPT-3.5-turbo, we found that **news text shows a statistically significant linear increase in perplexity with temporal distance** (0.065 PPL/month, R²=0.935, p=0.033), while **structured factual text is highly learnable regardless of temporal distance** (75% loss reduction, pre/post gap closes 80% with fine-tuning). The core finding is that LLMs are &#34;stuck&#34; on novel world knowledge but &#34;flexible&#34; on textual patterns and structure — fine-tuning teaches format, not facts.
+
+## 2. Research Question &amp; Motivation
+
+**Question**: Do older LLMs (2023-era) show systematically different fine-tuning convergence rates across text domains when trained on temporally distant (2024-2025) data, and which domains are most resistant to updating?
+
+**Why this matters**: As LLMs are deployed in production, understanding which types of knowledge degrade and resist updating informs critical decisions about when to retrain, when to use RAG, and which domains require special attention for temporal maintenance.
+
+**Gap filled**: Prior work established that temporal degradation exists (Li et al. 2024; Nylund et al. 2023) and that fine-tuning on post-cutoff data often fails (Ovadia et al. 2024). Our contribution is measuring *convergence dynamics* — not just end-state performance — across systematically varied domains and temporal distances, revealing where the learning process itself breaks down.
+
+## 3. Methodology
+
+### 3.1 Experiment 1: Fine-tuning Convergence Analysis
+
+**Model**: Mistral-7B-v0.1 (released September 2023, knowledge cutoff ~Sept 2023)
+
+**Fine-tuning setup**:
+- LoRA: r=16, alpha=32, dropout=0.05, target modules: q_proj, v_proj
+- Trainable parameters: 6,815,744 / 7,248,547,840 (0.094%)
+- Optimizer: AdamW, LR=2e-4, weight_decay=0.01
+- Batch size: 4, gradient accumulation: 2, effective batch: 8
+- Epochs: 3 per condition
+- Hardware: 4x NVIDIA RTX A6000 (49GB each), CUDA 12.5
+- Random seed: 42 (reset for each condition)
+- Framework: PyTorch 2.4.0 + PEFT, Transformers 5.5.0
+
+**Datasets** (9 conditions, ~50K tokens each):
+
+| Condition | Domain | Time Period | Months from Cutoff | N Examples |
+|-----------|--------|-------------|-------------------|------------|
+| news_2022 | News (BBC) | Jan 2022 | -20 (pre-cutoff) | 56 |
+| news_2024 | News (BBC) | Jan 2024 | +4 | 58 |
+| news_2025_jan | News (BBC) | Jan 2025 | +16 | 69 |
+| news_2025_jun | News (BBC) | Jun 2025 | +21 | 56 |
+| wiki_2022 | Wikipedia | Jan 2022 | -20 (pre-cutoff) | 2 |
+| wiki_2024 | Wikipedia | Jan 2024 | +4 | 4 |
+| wiki_2025 | Wikipedia | Jan 2025 | +16 | 2 |
+| facts_pre | Factual QA (TAQA) | 2020-2022 | pre-cutoff | 1,041 |
+| facts_post | Factual QA (TAQA) | 2023+ | post-cutoff | 1,082 |
+
+**Data sources**: BBC News from `RealTimeData/bbc_news_alltime` (HuggingFace), Wikipedia from `RealTimeData/wikitext_alltime`, temporal QA from `ROIM/temporal-alignment-qa` (TAQA).
+
+**Metrics**:
+- Initial perplexity (before fine-tuning): measures model&#39;s &#34;surprise&#34; at text
+- Final perplexity (after fine-tuning): measures how well the model learned
+- Loss reduction %: effectiveness of fine-tuning
+- Convergence ratio: mean(last 10% of losses) / mean(first 10% of losses)
+- Temporal slope: regression of perplexity vs. months-from-cutoff
+
+### 3.2 Experiment 2: API Knowledge Probing
+
+**Models**: GPT-3.5-turbo (2023 knowledge cutoff) and GPT-4o-mini (newer reference)
+
+**Design**: 30 factual questions about 2024-2025 events across 6 domains (Politics, Technology, Science, Sports, Entertainment, Business), 5 questions per domain. Questions test entity knowledge, event outcomes, numerical facts, and technical details.
+
+**Evaluation**: GPT-4o-mini as automated judge (scoring CORRECT / PARTIALLY_CORRECT / WRONG / DECLINED). Temperature=0.0 for reproducibility.
+
+## 4. Results
+
+### 4.1 Fine-tuning Convergence Results
+
+| Condition | Init PPL | Final PPL | Loss Red% | Conv Ratio | Time (s) |
+|-----------|----------|-----------|-----------|------------|----------|
+| news_2022 | 5.13 | 3.64 | 21.1% | 0.887 | 36.4 |
+| news_2024 | 5.80 | 3.86 | 23.2% | 0.766 | 44.9 |
+| news_2025_jan | 6.35 | 3.94 | 25.8% | 0.786 | 44.9 |
+| news_2025_jun | 6.64 | 4.56 | 19.8% | 0.815 | 35.8 |
+| wiki_2022 | 3.89 | 2.67 | 27.6% | 0.824 | 1.3 |
+| wiki_2024 | 4.43 | 3.40 | 17.7% | 0.877 | 2.4 |
+| wiki_2025 | 2.31 | 1.69 | 37.4% | 0.727 | 1.3 |
+| facts_pre | 14.61 | 1.93 | 75.4% | 0.529 | 685.2 |
+| facts_post | 15.54 | 1.96 | 75.5% | 0.576 | 712.0 |
+
+#### Key Finding 1: News perplexity increases linearly with temporal distance
+
+For BBC News, initial perplexity increases at **0.065 PPL per month** past the model&#39;s knowledge cutoff (R²=0.935, p=0.033). This is statistically significant and represents a 22% average PPL gap between pre-cutoff (2022) and post-cutoff (2024-2025) news.
+
+Fine-tuning partially mitigates this: the temporal slope drops to 0.035 PPL/month after LoRA fine-tuning, closing ~40% of the gap. However, the final perplexity on post-cutoff news remains 13.2% higher than pre-cutoff news even after fine-tuning.
+
+#### Key Finding 2: Factual QA text is highly learnable but format-dominated
+
+Despite the highest initial perplexity (14.6-15.5), factual QA text shows 75% loss reduction — the largest of any domain. Critically, the pre/post-cutoff gap is small (6.3%) and closes to just 1.2% after fine-tuning (80% gap closure).
+
+This reveals that the model learns the *structural pattern* (&#34;As of [year], regarding [entity]: [question] The answer is: [answer]&#34;) very effectively. The temporal content (which specific entity/answer) matters far less than the format for convergence.
+
+#### Key Finding 3: Wikipedia varies by article content, not time period
+
+Wikipedia results were noisy due to small sample sizes (2-4 articles per condition). The wiki_2025 condition actually showed *lower* initial perplexity (2.31) than wiki_2022 (3.89), because the specific articles happened to be on topics well-covered in the model&#39;s training. This confirms that for encyclopedic text, content specificity matters more than temporal distance.
+
+### 4.2 API Knowledge Probing Results
+
+GPT-3.5-turbo scored **4/30 correct (13.3%)** on post-cutoff questions:
+
+| Domain | GPT-3.5 Score | GPT-4o-mini Score | Status |
+|--------|--------------|-------------------|--------|
+| Politics | 0.00 | 0.00 | STUCK |
+| Technology | 0.00 | 0.10 | STUCK |
+| Entertainment | 0.00 | 0.20 | STUCK |
+| Science | 0.20 | 0.30 | STUCK |
+| Sports | 0.20 | 0.20 | STUCK |
+| Business | 0.40 | 0.20 | MODERATE |
+
+Both models overwhelmingly **declined** to answer (77-83% of responses), rather than hallucinating. The 4 correct answers from GPT-3.5 were for facts partially known before its cutoff: Paris 2024 Olympics (announced pre-cutoff), OSIRIS-REx (mission completed late 2023), Twitter/X rebrand (2023), and Apple&#39;s $3T market cap (trajectory known pre-cutoff).
+
+**By knowledge type**: Entity-specific knowledge (names, titles) was hardest (6% accuracy), while pre-announced events (29%) and ongoing trends (25%) were slightly easier.
+
+### 4.3 Visualizations
+
+Key figures generated (see `figures/` directory):
+- `main_figure.png`: Combined 6-panel figure showing all results
+- `loss_curves_by_domain.png`: Training loss trajectories per condition
+- `perplexity_comparison.png`: Before/after fine-tuning comparison
+- `gradient_norms.png`: Gradient dynamics during training
+- `domain_summary.png`: Domain-level summary
+- `api_probing_results.png`: API probing accuracy by domain
+
+## 5. Analysis &amp; Discussion
+
+### Where LLMs Are &#34;Stuck&#34;
+
+1. **Novel named entities**: The model cannot generate or predict post-cutoff names, titles, or specific outcomes. Fine-tuning on news text reduces perplexity but doesn&#39;t close the gap fully — the model learns stylistic patterns of recent news but not the specific facts.
+
+2. **Event-driven domains**: News, politics, and sports results involve specific outcomes that are fundamentally unknowable before they happen. The linear perplexity increase (0.065 PPL/month) quantifies this temporal knowledge decay.
+
+3. **Numerical facts**: Specific numbers (inflation rates, stock prices, scores) are essentially random from the model&#39;s perspective and cannot be extrapolated.
+
+### Where LLMs Are &#34;Flexible&#34;
+
+1. **Textual structure and format**: The factual QA experiment shows that models can learn any structured format with 75% loss reduction regardless of whether the content is pre- or post-cutoff. The format is learnable; the facts within it are not.
+
+2. **Style and register**: News writing style hasn&#39;t fundamentally changed between 2022-2025, so the model can adapt to &#34;how&#34; news sounds even if it can&#39;t predict &#34;what&#34; it says.
+
+3. **Encyclopedic knowledge**: Wikipedia articles about established topics show relatively stable perplexity, because the foundational knowledge doesn&#39;t change even as articles get updated.
+
+### Comparison to Prior Work
+
+Our findings are consistent with:
+- **Ovadia et al. (2024)**: Fine-tuning on post-cutoff data often fails to inject new knowledge (our news results confirm this)
+- **Li et al. (2024)**: News/finance degrade fastest (our temporal slope confirms domain-specific degradation rates)
+- **Nylund et al. (2023)**: Linear temporal degradation (~7-10 F1/year translates roughly to our 0.065 PPL/month)
+
+Our novel contribution is showing that fine-tuning convergence dynamics differ by *what* needs to be learned: structural patterns converge quickly regardless of temporal distance, while factual content shows persistent gaps.
+
+## 6. Limitations
+
+1. **Small Wikipedia samples**: Only 2-4 articles per condition due to dataset size constraints. The wiki_2025 result (lower PPL than wiki_2022) is likely an artifact of article-specific content, not a real temporal effect.
+
+2. **API probing limitations**: Both GPT-3.5 and GPT-4o-mini have safety training that causes them to decline rather than attempt answers, making it difficult to distinguish &#34;doesn&#39;t know&#34; from &#34;refuses to guess.&#34; This underestimates the models&#39; latent knowledge.
+
+3. **Single model**: We only tested Mistral-7B-v0.1. Results may differ for other architectures or model sizes.
+
+4. **Proxy for 2026**: Our most recent data is from June 2025, not 2026. The temporal effects measured may underestimate the difficulty of truly 2026-era text.
+
+5. **Format confound in factual QA**: The TAQA-derived datasets use a highly structured format that the model learns efficiently. The high convergence rate may reflect format learning rather than knowledge absorption.
+
+6. **No held-out evaluation**: We measured training loss convergence, not generalization to held-out data. A model that memorizes training text doesn&#39;t necessarily &#34;understand&#34; it.
+
+## 7. Conclusions &amp; Next Steps
+
+### Answer to Research Question
+
+Older LLMs (2023-era) are **stuck on novel factual content** (named entities, event outcomes, numerical facts) but **flexible on textual patterns** (writing style, format, structure). The distinction is not simply &#34;old text easy, new text hard&#34; — it&#39;s &#34;patterns learnable, facts not.&#34;
+
+Fine-tuning can teach a 2023 model to *sound like* 2025 text (reducing the stylistic gap by ~40%), but it cannot teach the model to *know* 2025 facts. This has direct practical implications:
+
+- **For deployment**: Use RAG for factual recency; use fine-tuning for domain adaptation and style
+- **For research**: Temporal evaluations should separate format/style accuracy from factual accuracy
+- **For model maintenance**: The 0.065 PPL/month degradation rate for news suggests ~6-month update cycles for news-heavy applications
+
+### Recommended Follow-Up
+
+1. **Held-out evaluation**: Measure generalization, not just training convergence
+2. **Larger Wikipedia samples**: Use full monthly Wikipedia dumps for robust encyclopedic comparisons
+3. **Multi-model comparison**: Test whether newer architectures (Llama-3, Phi-3) show different degradation patterns
+4. **Reversal curse interaction**: Test whether post-cutoff facts are even harder to access from non-training directions
+5. **Fine-grained domain taxonomy**: Break news into sub-categories (politics, sports, business, tech) to identify which news types are most resistant
+
+## References
+
+1. Li et al. (2024). &#34;Is Your LLM Outdated? Temporal Generalization.&#34; arXiv:2405.08460
+2. Nylund et al. (2023). &#34;Time is Encoded in the Weights of Finetuned Language Models.&#34; arXiv:2312.13401
+3. Berglund et al. (2023). &#34;The Reversal Curse.&#34; arXiv:2309.12288
+4. Zhao et al. (2024). &#34;Set the Clock: Temporal Alignment.&#34; arXiv:2402.16797
+5. Ovadia et al. (2024). &#34;Fine-Tuning or Retrieval?&#34; arXiv:2312.05934
+6. PELCRA (2025). &#34;LLMLagBench.&#34; arXiv:2511.12116
+7. Shumailov et al. (2023). &#34;The Curse of Recursion.&#34; arXiv:2305.17493
+8. Longpre et al. (2023). &#34;A Pretrainer&#39;s Guide to Training Data.&#34; arXiv:2305.13169
+
+## Appendix: Environment &amp; Reproducibility
+
+- Python 3.12.8
+- PyTorch 2.4.0+cu124
+- Transformers 5.5.0
+- PEFT (LoRA)
+- Hardware: 4x NVIDIA RTX A6000 (49GB each)
+- Random seed: 42
+- Total experiment time: ~30 minutes (excluding model download)
+- API costs: ~$2 (OpenAI, 60 API calls for probing + judging)
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            RESEARCH PLAN
+════════════════════════════════════════════════════════════════════════════════
+
+# Research Plan: What Text Can&#39;t LLMs Simulate?
+
+## Motivation &amp; Novelty Assessment
+
+### Why This Research Matters
+LLMs are increasingly used in applications requiring up-to-date knowledge, yet their knowledge is frozen at training time. Understanding *which domains* of knowledge are hardest to update via finetuning — and why — has direct implications for deployment strategies, update schedules, and the choice between finetuning vs. RAG for different use cases. This research moves beyond asking &#34;do LLMs degrade over time?&#34; (well-established) to the more actionable question: &#34;which specific types of text are structurally resistant to finetuning?&#34;
+
+### Gap in Existing Work
+The literature establishes that:
+- Temporal degradation is real and linear (~7-10 F1/year, Nylund et al. 2023)
+- Finetuning on post-cutoff data often fails or hurts (Ovadia et al. 2024)
+- News/finance degrade fastest; encyclopedia is more stable (Li et al. 2024)
+
+**What&#39;s missing**: No study has measured *finetuning convergence dynamics* (loss curves, gradient behavior) across different text domains for temporally distant data. Existing work measures end-state performance, not the learning process itself. We don&#39;t know whether certain domains simply need more data/epochs, or whether they represent fundamentally harder learning problems.
+
+### Our Novel Contribution
+1. **Convergence dynamics by domain**: Track training loss curves when finetuning a 2023-era model on different categories of 2024-2025 text vs. pre-2023 text
+2. **Domain taxonomy of &#34;stuckness&#34;**: Systematic categorization of which text types (news, facts, code, encyclopedia) resist finetuning most
+3. **API-based validation**: Cross-validate findings using GPT-3.5 (2023) knowledge probing on 2025-2026 questions across domains
+
+### Experiment Justification
+- **Experiment 1 (Finetuning convergence)**: Directly tests the core hypothesis by measuring how quickly/slowly a 2023 model learns different types of recent text. Novel metric: convergence rate ratio (recent/old text).
+- **Experiment 2 (API knowledge probing)**: Validates domain-level findings with a different methodology (probing vs. finetuning), strengthening any convergence between results.
+
+---
+
+## Research Question
+Do older LLMs (2023-era) show systematically different finetuning convergence rates across text domains when trained on temporally distant (2024-2025) data, and which domains are most resistant to updating?
+
+## Hypothesis Decomposition
+1. **H1**: Finetuning loss on post-cutoff text converges more slowly than on pre-cutoff text from the same domain
+2. **H2**: Event-driven domains (news, current events) show the largest convergence gap between pre/post-cutoff text
+3. **H3**: Structured/encyclopedic domains (Wikipedia, technical docs) show smaller convergence gaps
+4. **H4**: Factual knowledge (named entities, dates, numbers) is harder to inject than stylistic/structural patterns
+
+## Proposed Methodology
+
+### Approach
+Two complementary experiments:
+
+**Experiment 1: Finetuning Convergence Analysis**
+- Model: Mistral-7B-v0.1 (Sept 2023, clear knowledge cutoff)
+- Finetuning: LoRA (r=16, alpha=32, targeting q_proj/v_proj)
+- Datasets: Domain-stratified text from pre-2023 vs. 2024-2025
+- Domains: News, Wikipedia, Technical/Code, Factual QA
+- Metrics: Training loss curves, convergence speed, final perplexity
+- Each condition: Same number of tokens, same hyperparameters
+
+**Experiment 2: API Knowledge Probing**
+- Model: GPT-3.5-turbo (2023 knowledge cutoff)
+- Task: Answer questions about events/facts from 2025-2026 across domains
+- Domains: Politics, Science, Technology, Sports, Entertainment, Business
+- Metrics: Accuracy, confidence calibration, error categorization
+- Comparison: Same questions to GPT-4o-mini (newer model) as reference
+
+### Experimental Steps
+1. Prepare domain-stratified text datasets from available resources + web-fetched recent content
+2. Download Mistral-7B-v0.1 and set up LoRA finetuning pipeline
+3. Run finetuning on each domain×time-period combination (8 conditions)
+4. Record loss at each training step, compute convergence metrics
+5. Generate 2025-2026 knowledge questions across 6 domains
+6. Query GPT-3.5-turbo and GPT-4o-mini on all questions
+7. Score accuracy and categorize errors by domain
+8. Statistical analysis comparing convergence rates and accuracy across domains
+
+### Baselines
+- Pre-cutoff text finetuning (same domain, same amount of text) as control
+- Unfinetuned model perplexity as reference point
+
+### Evaluation Metrics
+- **Convergence speed**: Steps to reach 90% of final loss reduction
+- **Final loss ratio**: Final loss on post-cutoff / pre-cutoff text
+- **Domain resistance score**: Normalized convergence gap across domains
+- **QA accuracy by domain**: For API probing experiment
+- **Error taxonomy**: Categorized error types per domain
+
+### Statistical Analysis Plan
+- Two-way ANOVA: domain × time-period on convergence speed
+- Paired t-tests for within-domain pre/post-cutoff comparisons
+- Cohen&#39;s d effect sizes for each domain comparison
+- Significance level: α = 0.05 with Bonferroni correction
+
+## Expected Outcomes
+- News/current events: Largest convergence gap (most &#34;stuck&#34;)
+- Wikipedia/encyclopedia: Smallest convergence gap (most &#34;flexible&#34;)  
+- Code/technical: Moderate gap (syntax flexible, but API/library names stuck)
+- Factual QA: Large gap for entity-specific facts, small for structural patterns
+
+## Timeline and Milestones
+1. Environment + data prep: 30 min
+2. Model download + finetuning setup: 20 min
+3. Run finetuning experiments (8 conditions): 60-90 min
+4. API probing experiment: 20 min
+5. Analysis + visualization: 30 min
+6. Documentation: 20 min
+
+## Potential Challenges
+- Model download time (mitigate: use smaller model if needed, e.g., Mistral-7B-Instruct or phi-2)
+- Limited 2025-2026 text availability (mitigate: use 2024 as proxy, supplement with web-fetched content)
+- Small dataset sizes may limit statistical power (mitigate: use multiple random seeds)
+
+## Success Criteria
+- Clear, statistically significant difference in convergence rates between at least 2 domains
+- Consistent ordering of domain difficulty between finetuning and API probing experiments
+- Actionable taxonomy of &#34;stuck&#34; vs. &#34;flexible&#34; text categories
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          LITERATURE REVIEW
+════════════════════════════════════════════════════════════════════════════════
+
+# Literature Review: What Text Can&#39;t LLMs Simulate?
+
+## Research Area Overview
+
+This review examines the fundamental limitations of large language models (LLMs) in generating or simulating text that reflects knowledge beyond their training data — particularly temporal knowledge. The core research question is whether older LLMs (e.g., from 2023) will have difficulty converging on 2026-era data during finetuning, revealing areas where LLMs are structurally &#34;stuck&#34; versus flexible. The literature converges on several key themes: temporal degradation of LLM performance, the mechanics of knowledge injection via finetuning, fundamental limitations of autoregressive training, and methods for temporal alignment.
+
+---
+
+## Key Papers
+
+### Paper 1: &#34;Is Your LLM Outdated? A Deep Look at Temporal Generalization&#34;
+- **Authors**: Li et al. (FreedomIntelligence)
+- **Year**: 2024 (arXiv:2405.08460)
+- **Source**: arXiv / NAACL 2025
+- **Key Contribution**: Introduces &#34;FreshBench&#34; — a comprehensive framework for measuring temporal degeneration across 35+ LLMs using both compression intelligence (BPC on time-stamped text) and future event prediction (Good Judgment Open questions).
+- **Methodology**: Evaluates BPC on BBC News, Wikipedia, arXiv across monthly intervals; prediction accuracy on 2,769 GJO forecasting questions (2015–2024). Defines Temporal Bias Index (TBI) to quantify degradation rate.
+- **Datasets Used**: BBC News (RealTimeData/bbc_news_alltime), Wikipedia (RealTimeData/wikitext_alltime), arXiv, Good Judgment Open.
+- **Results**:
+  - All models show positive TBI on BBC news (degradation). Future prediction accuracy drops 30-55% within months of release.
+  - **Nostalgia Bias**: Models peak at knowledge from 2015-2018, not near their cutoff. LLaMA2-70B peaks at 2019 despite a 2022 cutoff.
+  - More capable models degrade *faster* post-release (Claude-3.5-Sonnet: 43.65% decline).
+  - Finance (58.1%) and Business (55.4%) are hardest categories; Leader Entry/Exit (83.7%) easiest.
+  - Open-source models show better long-term temporal stability than closed-source.
+- **Code Available**: https://github.com/FreedomIntelligence/FreshBench
+- **Relevance**: Directly confirms our hypothesis. Models are anchored 3-5 years before their cutoff, not at it. Dynamic, event-driven text (news, finance) is most resistant to generalization, while encyclopedic text is more stable.
+
+### Paper 2: &#34;Time is Encoded in the Weights of Finetuned Language Models&#34;
+- **Authors**: Nylund, Gururangan, Smith (UW / AI2)
+- **Year**: 2023 (arXiv:2312.13401)
+- **Source**: arXiv
+- **Key Contribution**: Introduces &#34;time vectors&#34; — weight-space directions that encode temporal information. Shows temporal misalignment degrades performance linearly with temporal distance.
+- **Methodology**: Finetunes T5-small/large/3b on WMT news (2012–2021) and Twitter (2015–2020). Constructs time vectors τ_t = θ_t − θ_pre and measures cosine similarity, interpolation, and task analogy.
+- **Datasets Used**: WMT English news, Internet Archive Twitter Stream, Newsroom (NewsSum), PoliAff.
+- **Results**:
+  - Linear degradation: ~7-10 F1/ROUGE points per year of temporal misalignment.
+  - Time vector cosine similarity correlates strongly with performance (Pearson r = -0.87 for WMT LM).
+  - Interpolation between year vectors improves intervening-year performance (PoliAff: +8 F1 from simple averaging).
+  - &#34;Time soups&#34; (multi-year averaging) fail — optimal multi-period model lies outside convex hull of single-year vectors.
+  - Feed-forward layers carry most temporal information; embeddings carry almost none.
+- **Code Available**: https://github.com/KaiNylund/lm-weights-encode-time (500+ models released)
+- **Relevance**: Provides the strongest quantitative evidence that temporal distance imposes a principled, linear performance cost that cannot be fully eliminated by weight-space arithmetic. Critical mechanistic insight: temporal knowledge is in transformer layers, not vocabulary.
+
+### Paper 3: &#34;The Reversal Curse: LLMs trained on &#39;A is B&#39; fail to learn &#39;B is A&#39;&#34;
+- **Authors**: Berglund et al. (Oxford)
+- **Year**: 2023 (arXiv:2309.12288), ICLR 2024
+- **Key Contribution**: Demonstrates that autoregressive LLMs cannot generalize trained facts to the reverse direction. If trained on &#34;A is B&#34;, they fail completely on &#34;B is A&#34; — even at 175B parameters.
+- **Methodology**: Finetunes GPT-3 (350M–175B) and Llama-7B on fictitious celebrity facts (30 name-description pairs, 30 paraphrases each). Tests same-direction vs. reverse-direction accuracy.
+- **Datasets Used**: Custom fictitious facts; IMDB top-1000 celebrities for real-world validation.
+- **Results**:
+  - Same direction: up to 96.7% accuracy. Reverse direction: 0.0% across ALL model sizes and hyperparameter settings.
+  - Log-probability of correct reverse answer is indistinguishable from random names.
+  - 40,000 training documents: still 0% reverse accuracy.
+  - GPT-4 real-world: 79% on &#34;celebrity → parent&#34; vs. 33% on &#34;parent → child&#34;.
+  - Scale does NOT help. Data augmentation does NOT help. Only explicit both-direction training works.
+  - In-context learning achieves ~100% reversal — the failure is weight-update-specific.
+- **Code Available**: https://github.com/lukasberglund/reversal_curse
+- **Relevance**: Reveals a fundamental architectural constraint of autoregressive training. When finetuning older LLMs on new facts, knowledge will be encoded asymmetrically in the direction of the training text. This means finetuned models may appear to &#34;learn&#34; new content but fail on queries that require accessing it from a different angle.
+
+### Paper 4: &#34;Set the Clock: Temporal Alignment of Pretrained Language Models&#34;
+- **Authors**: Zhao, Brumbaugh, Wang, Hajishirzi, Smith (UW / AI2)
+- **Year**: 2024 (arXiv:2402.16797), ACL Findings 2024
+- **Key Contribution**: Introduces TAQA (20,148 time-sensitive questions with year-indexed answers, 2000–2023) and demonstrates &#34;temporal alignment&#34; — shifting a model&#39;s internal knowledge clock via finetuning.
+- **Methodology**: Tests LLaMA1-65B, LLaMA2-7B/13B/70B, GPT-3 on TAQA. Three alignment methods: time-aware prompting, target-year finetuning, adaptive finetuning.
+- **Datasets Used**: TAQA (custom, 20K questions, available on HuggingFace: ROIM/temporal-alignment-qa).
+- **Results**:
+  - LLaMA2-70B peaks at 2019 despite 2022 cutoff — 3-year temporal lag.
+  - Finetuning to 2022: F1 improves from 17.2 → 27.9 (+62.2% relative) without injecting new facts.
+  - Historical alignment works: finetuning to 2010 gives 2.8x improvement.
+  - 61.5% of recently-changed questions remain wrong even after alignment.
+  - Popular topics align easily; numerical answers and niche topics resist alignment.
+  - Correctness-based data selection (activating existing knowledge) beats popularity-based selection (teaching new facts).
+- **Code Available**: https://github.com/yizhongw/llm-temporal-alignment
+- **Relevance**: Directly demonstrates that models have layered temporal knowledge, not a snapshot. The &#34;temporal chaos&#34; is misactivation, not ignorance — but for genuinely post-cutoff knowledge, the problem compounds: the model lacks the contextual scaffolding needed for alignment.
+
+### Paper 5: &#34;Fine-Tuning or Retrieval? Comparing Knowledge Injection in LLMs&#34;
+- **Authors**: Ovadia et al.
+- **Year**: 2024 (arXiv:2312.05934), EMNLP 2024
+- **Key Contribution**: Directly compares unsupervised finetuning vs. RAG for injecting new knowledge into LLMs, with a specific &#34;current events&#34; test using post-cutoff data.
+- **Methodology**: Tests Llama2-7B, Mistral-7B, Orca2-7B on 5 MMLU subtasks + 910 current events questions (Aug–Nov 2023). Finetuning via continual pretraining; RAG via bge-large-en + FAISS.
+- **Results**:
+  - RAG consistently outperforms finetuning on ALL tasks. Current events: RAG 0.875 vs. FT 0.504 (Mistral).
+  - Llama2-7B finetuning on post-cutoff data *decreased* accuracy (0.353 → 0.219).
+  - Paraphrase augmentation helps monotonically but still cannot match RAG.
+  - Core finding: &#34;LLMs struggle to learn new factual information through unsupervised fine-tuning.&#34;
+- **Relevance**: Most directly tests our hypothesis. Finetuning on post-cutoff data often fails or even hurts performance. The paraphrase finding suggests that knowledge must be repeated in many varied forms to be learned — implying that small finetuning corpora of 2026 data would be structurally insufficient.
+
+### Paper 6: &#34;LLMLagBench: Identifying Temporal Training Boundaries in LLMs&#34;
+- **Authors**: PELCRA (University of Łódź)
+- **Year**: 2025 (arXiv:2511.12116)
+- **Key Contribution**: Empirically identifies actual temporal training boundaries of 35 LLMs via 1,713 manually curated temporal QA pairs, finding that declared cutoffs frequently diverge from empirical ones by 1-2 years.
+- **Methodology**: Questions from 80,000 news items (2021–2025), 11 major outlets. Uses PELT changepoint detection on faithfulness scores. DeepSeek-V3 as automated evaluator (Cohen&#39;s Kappa 0.81-0.83).
+- **Results**:
+  - Many models have multiple partial cutoffs (pretraining + post-training phases).
+  - GPT-OSS-120B: declared cutoff Jul 2024, detected Sep 2023 (~1 year off).
+  - Small models (Gemma 3-4B) show near-zero refusal rates, hallucinating about post-cutoff events instead of declining.
+  - Claude Sonnet 4: two detected cutoffs at Feb 2023 and Dec 2024.
+- **Code Available**: Interactive leaderboard at https://huggingface.co/spaces/pelcra/llmlagbench
+- **Relevance**: Shows that the effective knowledge boundary of LLMs is often 1-2 years earlier than declared. This compounds the difficulty of using older models with newer data.
+
+### Paper 7: &#34;The Curse of Recursion: Training on Generated Data Makes Models Forget&#34;
+- **Authors**: Shumailov et al.
+- **Year**: 2023 (arXiv:2305.17493)
+- **Key Contribution**: Demonstrates &#34;model collapse&#34; — when models are trained on synthetic data from previous model generations, they progressively lose tail distributions.
+- **Relevance**: Important context for our hypothesis. If older LLMs produce increasingly homogeneous text (losing distributional tails), they may be structurally unable to simulate the full diversity of future text — particularly novel or rare patterns that emerge post-training.
+
+### Paper 8: &#34;A Pretrainer&#39;s Guide to Training Data&#34;
+- **Authors**: Longpre et al.
+- **Year**: 2023 (arXiv:2305.13169)
+- **Key Contribution**: Measures effects of data age, quality, and domain composition on LM performance across 28 1.5B parameter models.
+- **Results**: Temporal shift between pretraining and evaluation data leads to performance degradation that is NOT overcome by finetuning. Heterogeneous data sources (books + web) are beneficial.
+- **Relevance**: Confirms that temporal distribution mismatch is a fundamental problem not solvable by finetuning alone.
+
+---
+
+## Common Methodologies
+
+Across the reviewed papers, several methodological patterns emerge:
+
+- **Temporal stratification**: Splitting data by time period (yearly or monthly) and measuring cross-period performance (used in Papers 1, 2, 4, 6).
+- **Bits-per-character / Perplexity**: Normalized language modeling metrics for comparing models across tokenizers (Papers 1, 2).
+- **Time-sensitive QA**: Open-domain questions whose answers change over time, with year-indexed ground truth (Papers 4, 6).
+- **Finetuning + evaluation on temporal splits**: Train on period A, test on period B, measure degradation (Papers 2, 5).
+- **Weight-space analysis**: Examining how model weights change when trained on different time periods (Paper 2).
+
+## Standard Baselines
+
+- **Unaligned LLM** (no temporal adaptation): The standard baseline across all papers.
+- **RAG**: Retrieval-augmented generation as the upper-bound for knowledge injection (Paper 5).
+- **Prompting variants**: Zero-shot, few-shot, time-aware prompting (Papers 1, 4).
+- **Continual pretraining**: Unsupervised finetuning on new text (Papers 5, 8).
+- **LoRA / PEFT**: Parameter-efficient finetuning as a practical alternative to full finetuning (Papers 2, 4).
+
+## Evaluation Metrics
+
+- **Temporal Bias Index (TBI)**: Linear regression coefficient on BPC over time (Paper 1).
+- **Token-level F1** (F^y, F_max, F_decay): Year-specific and decay-weighted QA accuracy (Paper 4).
+- **Exact-match accuracy**: For factual QA and reversal tasks (Papers 3, 5, 6).
+- **Faithfulness score**: 0-2 scale for temporal knowledge boundary detection (Paper 6).
+- **Perplexity / BPC**: Language modeling quality across temporal splits (Papers 1, 2, 8).
+- **ROUGE-L / macro F1**: For downstream tasks like summarization and classification (Paper 2).
+
+## Datasets in the Literature
+
+| Dataset | Used In | Task | Time Range |
+|---------|---------|------|------------|
+| TAQA | Paper 4 | Time-sensitive QA | 2000–2023 |
+| BBC News (alltime) | Paper 1 | BPC / temporal degeneration | 2017–2025 |
+| Wikitext (alltime) | Paper 1 | BPC baseline | 2017–2025 |
+| WMT News | Paper 2 | LM / time vectors | 2012–2021 |
+| Good Judgment Open | Paper 1 | Future event prediction | 2015–2024 |
+| LLMLagBench QA | Paper 6 | Temporal boundary detection | 2021–2025 |
+| Current Events (custom) | Paper 5 | Post-cutoff knowledge injection | Aug–Nov 2023 |
+| IMDB Celebrities | Paper 3 | Reversal curse validation | Atemporal |
+| StreamingQA | Related | Streaming knowledge QA | 2007–2020 |
+
+## Gaps and Opportunities
+
+1. **No study directly measures finetuning convergence dynamics on temporally distant data.** Existing work measures evaluation-time misalignment (Papers 1, 2) or post-hoc knowledge injection (Paper 5), but none tracks training loss curves, gradient norms, or convergence rates when finetuning a 2023-era model on 2025+ text.
+
+2. **Interaction between temporal distance and text type is underexplored.** We know news text degrades faster than encyclopedia text (Paper 1), and finance/economics are hardest (Paper 1), but systematic categorization of &#34;what types of text are impossible to simulate&#34; is missing.
+
+3. **The Reversal Curse has not been studied in temporal contexts.** How does the asymmetric learning problem compound when the facts being learned are post-cutoff? Does the model form even weaker directional associations for novel entities?
+
+4. **Post-2024 evaluation data is scarce.** Most datasets end at 2023-2024. Testing on 2025-2026 data requires new dataset construction or dynamic datasets.
+
+5. **Model architecture comparisons are limited.** Most temporal studies focus on Transformer decoder-only models. Whether encoder-decoder architectures (T5) or newer architectures (Mamba, RWKV) show different temporal degradation patterns is unknown.
+
+---
+
+## Recommendations for Our Experiment
+
+### Recommended Datasets
+1. **TAQA** (primary): 20K time-sensitive questions with year-indexed answers. Enables precise measurement of temporal knowledge shift during finetuning. Available on HuggingFace.
+2. **BBC News (alltime)**: Monthly news articles 2017–2025. Ideal for constructing temporal train/test splits for perplexity experiments.
+3. **Wikitext (alltime)**: Monthly Wikipedia snapshots. Control dataset for stable/encyclopedic text.
+4. **FreshQA**: Dynamic QA benchmark with fast-changing questions. Good for evaluation.
+
+### Recommended Baselines
+1. **Unaligned older LLM** (e.g., LLaMA-2-7B/13B, Mistral-7B-v0.1): 2023-era models as the &#34;stuck&#34; baseline.
+2. **Same model + finetuning on target-period text**: To measure convergence difficulty.
+3. **Same model + RAG on target-period text**: Upper bound for knowledge injection (Paper 5).
+4. **Newer model (e.g., LLaMA-3.1)**: To compare whether architecture/pretraining improvements reduce temporal degradation.
+
+### Recommended Metrics
+1. **Perplexity / BPC on temporal text splits**: Direct measure of language modeling capability across time.
+2. **TAQA F^y (year-specific F1)**: Measures whether finetuning shifts the model&#39;s &#34;knowledge clock.&#34;
+3. **Training loss convergence rate**: Novel metric — track how quickly loss drops on temporally distant vs. near data.
+4. **Gradient norm analysis**: Measure how much the model must change to accommodate new temporal knowledge.
+
+### Methodological Considerations
+- Use **LoRA finetuning** (r=8, targeting Q/V attention) for practical experiments, as Paper 2 demonstrated it preserves temporal structure.
+- Track **per-category performance** (news vs. encyclopedia vs. code vs. finance) to identify which text types are most resistant.
+- Include **both directions of temporal transfer**: old model → new data AND new model → old data, to distinguish temporal limitations from general capability limitations.
+- Consider the **Reversal Curse**: ensure evaluation includes queries that require accessing finetuned knowledge from multiple angles, not just the training-text direction.
+- The **&#34;temporal chaos&#34; finding** (Paper 4) suggests that finetuning may activate existing suppressed knowledge rather than injecting truly new knowledge. Experimental design should distinguish these two mechanisms.
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          PAPER REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+Generate a complete academic paper with the following structure:
+
+1. TITLE
+   - Clear, specific, informative
+   - Should convey main finding or contribution
+
+2. AUTHOR
+   - Use this exact author line in the \author{} block: Ari Holtzman and NeuriCo
+
+3. ABSTRACT (150-250 words)
+   - Problem statement
+   - Approach
+   - Key results
+   - Significance
+
+4. INTRODUCTION
+   - Research problem and motivation
+   - Gap in existing work
+   - Our contribution (be specific)
+   - Paper organization
+
+5. RELATED WORK
+   - Organized by theme/approach
+   - Position our work relative to prior work
+   - Cite papers from literature review
+
+6. METHODOLOGY
+   - Clear description of approach
+   - Experimental setup
+   - Datasets used
+   - Evaluation metrics
+   - Baselines
+
+7. RESULTS
+   - Present results with tables and figures
+   - Statistical analysis
+   - Comparison to baselines
+   - Ablation studies (if applicable)
+
+8. DISCUSSION
+   - Interpretation of results
+   - Limitations
+   - Broader implications
+
+9. CONCLUSION
+   - Summary of contributions
+   - Key findings
+   - Future work
+
+10. REFERENCES
+   - BibTeX format
+   - All cited papers
+
+════════════════════════════════════════════════════════════════════════════════
+                          OUTPUT FORMAT
+════════════════════════════════════════════════════════════════════════════════
+
+Create a MODULAR LaTeX project with the following directory structure:
+
+paper_draft/
+├── main.tex              # Main file that imports all sections
+├── references.bib        # BibTeX references
+├── sections/
+│   ├── abstract.tex      # Abstract content
+│   ├── introduction.tex  # Introduction section
+│   ├── related_work.tex  # Related work section
+│   ├── methodology.tex   # Methodology section
+│   ├── results.tex       # Results section
+│   ├── discussion.tex    # Discussion section
+│   └── conclusion.tex    # Conclusion section
+├── figures/              # Directory for any generated figures
+├── tables/               # Directory for complex standalone tables
+└── appendix/             # Directory for appendix sections (if needed)
+
+INSTRUCTIONS:
+1. First, create the directory structure above (mkdir -p paper_draft/sections paper_draft/figures paper_draft/tables paper_draft/appendix)
+2. Write main.tex using the EXACT preamble for NEURIPS:
+
+   \documentclass{article}
+   \usepackage[final]{neurips_2025}  % NEURIPS style (neurips_2025.sty is in paper_draft/)
+   \usepackage[hidelinks]{hyperref}  % REQUIRED: clickable links
+   \usepackage{booktabs}  % REQUIRED: professional tables
+   \usepackage{graphicx}
+   \usepackage{amsmath,amssymb}
+
+   % Import command files
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+   % Use this bibliography style:
+   \bibliographystyle{plainnat}
+
+   \author{Ari Holtzman and NeuriCo}
+
+   - Use \input{sections/...} to include each section
+   - Use \bibliography{references} for references
+3. Write each section file with COMPLETE content (no placeholders)
+4. Each section file should include its \section{} command
+5. Write references.bib with all citations in BibTeX format
+6. After writing all files, compile the paper:
+   cd paper_draft && pdflatex -interaction=nonstopmode main.tex && bibtex main && pdflatex -interaction=nonstopmode main.tex && pdflatex -interaction=nonstopmode main.tex
+
+This modular structure allows humans to easily:
+- Edit individual sections without navigating a large file
+- Track changes per section
+- Reuse sections across different paper versions
+
+════════════════════════════════════════════════════════════════════════════════
+                          QUALITY REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+- Academic tone throughout
+- All claims must be supported by data from the experiment report
+- Proper citations using \cite{} commands
+- Clear figures and tables with proper captions
+- NO placeholder text - every section must have real content
+- The paper MUST compile without errors
+- If compilation fails, debug and fix the LaTeX errors
+
+════════════════════════════════════════════════════════════════════════════════
+                          LAB WRITING STYLE
+════════════════════════════════════════════════════════════════════════════════
+
+Follow these lab-specific conventions to match our paper style:
+
+1. LANGUAGE STYLE:
+   - Use active voice: "We propose", "We examine", "We focus on"
+   - Be direct and confident: "Our main question is...", "We hypothesize that..."
+   - State things clearly and simply - prefer plain language over jargon
+   - Use bold questions as paragraph organizers: {\bf what is X?}
+   - Include specific quantitative claims: "8.97% over baseline"
+   - Avoid fancy wording: "utilize" → "use", "facilitate" → "help"
+
+2. INTRODUCTION STRUCTURE:
+   - Engaging hook (get to the point quickly)
+   - Problem importance
+   - Gap identification
+   - Your approach with method figure reference
+   - Quantitative preview of results
+   - Contribution bullets (3-4 items, action verbs)
+
+3. CONTRIBUTION LISTS:
+   \begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+       \item We propose...
+       \item We conduct...
+       \item We complement...
+   \end{itemize}
+
+4. MODULAR COMMANDS STRUCTURE:
+   Command templates are pre-copied to paper_draft/commands/:
+   - math.tex: Math notation macros
+   - general.tex: Formatting macros
+   - macros.tex: Project-specific term definitions (customize this for your paper)
+
+   In main.tex, include:
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+5. REFERENCE CONVENTIONS:
+   Use reference macros from math.tex:
+   - \figref{fig:name} for "figure 1" (lowercase, in-sentence)
+   - \Figref{fig:name} for "Figure 1" (capitalized, start of sentence)
+   - \secref{sec:name} for "section 2"
+
+6. TEXT FORMATTING:
+   - Use \para{Header text} for bold paragraph headers
+   - Define method/dataset names with \textsc and \xspace:
+     \newcommand{\methodname}{\textsc{MethodName}\xspace}
+
+7. TABLE FORMATTING:
+   - Use booktabs package (no vertical lines)
+   - Use \resizebox{\textwidth}{!}{...} for wide tables
+   - Use @{} to remove padding at table edges
+   - Use \cmidrule(lr){x-y} for sub-headers
+   - Use \textsc{} for dataset/method names in headers
+   - Bold best results with {\bf ...}
+
+8. FIGURE FORMATTING:
+   - Use 0.32\textwidth for 3-column subfigures
+   - Use 0.95\linewidth for full-width figures
+   - Use \input{figures/legend} for shared legends
+   - Write self-contained captions explaining key observations
+
+9. RESULTS PRESENTATION:
+   - Define \increase and \decrease for colored arrows (green up, red down)
+   - Bold best results in tables
+   - Report confidence intervals when available
+
+10. ALGORITHM STYLING:
+    - Use algpseudocode with [noend]
+    - Use \triangleright for comments
+
+11. HYPERLINKS (REQUIRED):
+    - Always use \usepackage[hidelinks]{hyperref} or with colored links
+    - All citations, section refs, figure refs, table refs must be clickable
+    - This is essential for reader navigation
+
+════════════════════════════════════════════════════════════════════════════════
+                          WORKFLOW: REVIEW AND REFLECT
+════════════════════════════════════════════════════════════════════════════════
+
+Before calling finish, you MUST complete these review steps:
+
+1. REVIEW RESOURCES (at the start):
+   - Read .claude/skills/paper-writer/SKILL.md for detailed guidance
+   - Study templates/paper_writing/lab_style_guide.md for style conventions
+   - Browse paper_examples/ for formatting and language patterns
+
+2. SELF-REFLECTION (before finishing):
+   After writing all sections, review your work against these criteria:
+
+   LANGUAGE CHECK:
+   - [ ] Is the writing clear and jargon-free?
+   - [ ] Are claims specific with quantitative support?
+   - [ ] Is active voice used throughout?
+
+   FORMATTING CHECK:
+   - [ ] Does main.tex include \input{commands/math}, \input{commands/general}, \input{commands/macros}?
+   - [ ] Is hyperref package included for clickable references?
+   - [ ] Do tables use booktabs (no vertical lines)?
+   - [ ] Are best results bolded in tables?
+   - [ ] Are figures/tables properly captioned?
+
+   STRUCTURE CHECK:
+   - [ ] Does introduction follow: hook → importance → gap → approach → preview → contributions?
+   - [ ] Are contribution bullets specific with action verbs?
+   - [ ] Does the paper compile without errors?
+
+3. FIX ISSUES:
+   - Address any issues found in the self-reflection
+   - Re-compile and verify the PDF looks correct
+
+Only after completing this review should you consider the paper finished.

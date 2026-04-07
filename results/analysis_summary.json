@@ -1,0 +1,44 @@
+{
+  "domain_analysis": {
+    "News": {
+      "init_gap_pct": 22.045647378423304,
+      "final_gap_pct": 13.247788944941474,
+      "pre_init_ppl": 5.133346025367424,
+      "post_init_ppl": 6.265025388834235,
+      "pre_final_ppl": 3.6379453692907218,
+      "post_final_ppl": 4.119892693746628,
+      "pre_loss_red": 21.05071132195476,
+      "post_loss_red": 22.9603836470102,
+      "gap_closed_pct": 39.90746237777776
+    },
+    "Wikipedia": {
+      "init_gap_pct": -13.28060504851745,
+      "final_gap_pct": -4.701020509131774,
+      "pre_init_ppl": 3.8857731678217204,
+      "post_init_ppl": 3.3697189803220526,
+      "pre_final_ppl": 2.6713642699602254,
+      "post_final_ppl": 2.545782887755777,
+      "pre_loss_red": 27.608237348852217,
+      "post_loss_red": 27.54375629989785,
+      "gap_closed_pct": 64.60236192584793
+    },
+    "Facts": {
+      "init_gap_pct": 6.343441871562015,
+      "final_gap_pct": 1.2444672158852534,
+      "pre_init_ppl": 14.60936070208439,
+      "post_init_ppl": 15.536097006027937,
+      "pre_final_ppl": 1.9330190176092221,
+      "post_final_ppl": 1.957074805560196,
+      "pre_loss_red": 75.42259525133508,
+      "post_loss_red": 75.52277644753516,
+      "gap_closed_pct": 80.3818299106
+    }
+  },
+  "key_findings": {
+    "news_temporal_slope": "Perplexity increases ~0.07/month past cutoff for news",
+    "news_most_stuck": "News domain shows highest initial perplexity on post-cutoff text",
+    "facts_most_flexible": "Factual QA shows highest finetuning effectiveness (75% loss reduction)",
+    "wiki_moderate": "Wikipedia shows moderate temporal gap that partially closes with finetuning",
+    "finetuning_helps_more_for_style": "Finetuning reduces perplexity more effectively for structured/repetitive text than for novel factual content"
+  }
+}

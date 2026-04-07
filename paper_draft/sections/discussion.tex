@@ -1,0 +1,39 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Where LLMs Are Stuck}
+
+Our results identify three categories of text that resist fine-tuning on post-cutoff data.
+
+\para{Novel named entities.} The model cannot generate or predict post-cutoff names, titles, or specific outcomes. Fine-tuning on news text reduces perplexity but does not close the gap fully: the model learns the stylistic patterns of recent news (sentence structure, topic framing, journalistic conventions) without absorbing the specific facts. The persistent 13.2\% perplexity gap after fine-tuning reflects irreducible uncertainty about entities the model has never encountered.
+
+\para{Event-driven domains.} News, politics, and sports involve outcomes that are fundamentally unknowable before they happen. The linear perplexity increase of 0.065 PPL/month quantifies this temporal knowledge decay. At this rate, a model deployed 12 months past its cutoff faces roughly 0.78 PPL of additional ``surprise'' on news text---a meaningful degradation for applications requiring factual accuracy.
+
+\para{Numerical facts.} Specific numbers---inflation rates, stock prices, election margins, sports scores---are effectively random from the model's perspective. Neither fine-tuning nor prompting strategies can recover these values from parametric knowledge alone.
+
+\subsection{Where LLMs Are Flexible}
+
+\para{Textual structure and format.} The factual QA experiment provides the clearest evidence. Despite initial perplexities above 14, the model achieves 75\% loss reduction and near-identical final perplexity for pre- and post-cutoff conditions. The structured format ``As of [year], regarding [entity]: [answer]'' is learned efficiently because it reuses syntactic patterns the model already knows. The \emph{content} filling those slots is less important for convergence than the \emph{pattern} organizing it.
+
+\para{Writing style and register.} News writing style has not fundamentally changed between 2022 and 2025. The model can adapt to \emph{how} news sounds even when it cannot predict \emph{what} it says. This explains why loss reduction percentages for news (19.8--25.8\%) are positive despite the persistent perplexity gap: the model learns stylistic features while remaining uncertain about factual content.
+
+\para{Encyclopedic knowledge on established topics.} Wikipedia articles about well-established topics show relatively stable perplexity because the foundational knowledge they draw on does not change even as articles are updated. The low initial perplexity of \textsc{wiki-2025} (2.31) reflects this: the specific articles covered topics deeply embedded in the model's training distribution.
+
+\subsection{The Format--Fact Dichotomy}
+
+Our central finding---that fine-tuning teaches format, not facts---connects to several threads in the literature. \citet{berglund2024reversal} show that autoregressive models learn facts asymmetrically, encoding knowledge only in the direction of training text. This directional constraint may explain why fine-tuning on news text learns stylistic patterns (which appear consistently in left-to-right order) but not facts (which require bidirectional associations between entities and attributes). \citet{zhao2024set} find that temporal alignment ``activates existing suppressed knowledge'' rather than injecting new knowledge; our convergence analysis extends this by showing that the activation mechanism works efficiently for structural patterns but fails for novel entities.
+
+This dichotomy has a practical implication for the choice between fine-tuning and retrieval-augmented generation (RAG). Our results suggest a clear decision boundary: use fine-tuning for domain adaptation (teaching a model to produce text in a specific format, style, or register) and RAG for factual recency (providing the model with up-to-date facts at inference time). The 0.065 PPL/month degradation rate for news text suggests that applications with heavy news exposure should implement retrieval-based updates on roughly 6-month cycles.
+
+\subsection{Limitations}
+\label{sec:limitations}
+
+\para{Small Wikipedia samples.} The Wikipedia conditions contain only 2--4 articles each, yielding noisy estimates dominated by article-specific content. The finding that \textsc{wiki-2025} has lower perplexity than \textsc{wiki-2022} is almost certainly an artifact of the specific articles selected rather than a real temporal effect. Robust encyclopedic comparisons require full monthly Wikipedia dumps.
+
+\para{API probing conflates knowledge and safety.} Both \gptthree and \gptfourmini decline to answer 77--83\% of questions, reflecting safety training that discourages speculation. This makes it difficult to distinguish ``the model does not know'' from ``the model refuses to guess.'' The 13.3\% accuracy figure likely underestimates latent knowledge.
+
+\para{Single model architecture.} We test only \mistral for fine-tuning convergence. Different architectures, model sizes, or pretraining strategies may show different temporal degradation patterns. In particular, models with longer context windows or more diverse training data may exhibit different domain-specific resistance profiles.
+
+\para{Training loss versus generalization.} We measure training loss convergence, not held-out generalization. A model that memorizes training text superficially may show strong convergence without genuine comprehension. Evaluating on held-out temporal splits would strengthen our claims about what the model actually learns.
+
+\para{Format confound.} The high convergence of factual QA partly reflects the regularity of the \taqa format. More naturalistic post-cutoff text with embedded facts (e.g., news articles with novel entities) would provide a less confounded test of format versus fact learning.
